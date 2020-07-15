@@ -4,6 +4,7 @@
 
 using namespace Microsoft::WRL;
 using namespace Windows::UI::Core;
+using namespace Platform;
 
 class CGame
 {

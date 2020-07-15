@@ -94,12 +94,25 @@ void CGame::Initialize()
 
 	// create a render target that points to our back buffer
 	Device->CreateRenderTargetView(backBuffer.Get(), nullptr, &RenderTarget);
+
+	// Set the viewport 
+	D3D11_VIEWPORT viewPort = { 0 };
+
+	viewPort.TopLeftX = 0;
+	viewPort.TopLeftY = 0;
+	viewPort.Width = Window->Bounds.Width;
+	viewPort.Height = Window->Bounds.Height;
+
+	DeviceContext->RSSetViewports(1, &viewPort);
+	
+
+	InitGraphics();
+	InitPipeline();
 }
 
 // Performs updates to the game state
 void CGame::Update()
 {
-
 }
 
 // Renders a single frame of 3D graphics
@@ -111,6 +124,15 @@ void CGame::Render()
 	// Clear the Back buffer to some color
 	float color[4] = { 0.4f, 0.5f, 0.3f, 1.0f };
 	DeviceContext->ClearRenderTargetView(RenderTarget.Get(), color);
+
+	// Setting up the Vertex buffer
+	UINT stride = sizeof(VERTEX);
+	UINT offset = 0;
+	DeviceContext->IAGetVertexBuffers(0, 1, VertexBuffer.GetAddressOf(), &stride, &offset);
+	 
+	// Setting up the primitive topology
+	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DeviceContext->Draw(3, 0);
 
 	// Switch the back buffer and the front buffer
 	SwapChain->Present(1, 0);
@@ -154,7 +176,9 @@ void CGame::InitPipeline()
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = 
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-
+		//{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
+
+	Device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), VSFile->Data, VSFile->Length, &InputLayout);
+	DeviceContext->IASetInputLayout(InputLayout.Get());
 } 
