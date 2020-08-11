@@ -20,7 +20,8 @@ public:
 
 	struct VERTEX
 	{
-		float X, Y, Z;
+		float X, Y, Z;	// vertex position
+		float R, G, B;	// color data
 	};
 
 	void Initialize(); // Initialization code

@@ -128,7 +128,7 @@ void CGame::Render()
 	// Setting up the Vertex buffer
 	UINT stride = sizeof(VERTEX);
 	UINT offset = 0;
-	DeviceContext->IAGetVertexBuffers(0, 1, VertexBuffer.GetAddressOf(), &stride, &offset);
+	DeviceContext->IASetVertexBuffers(0, 1, VertexBuffer.GetAddressOf(), &stride, &offset);
 	 
 	// Setting up the primitive topology
 	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -142,9 +142,9 @@ void CGame::InitGraphics()
 {
 	VERTEX Vertices[] =
 	{
-		{0.0f, 0.5f, 0.0f},
-		{0.45f, -0.5f, 0.0f},
-		{-0.45f, -0.5f, 0.0f }
+		{0.0f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f},
+		{0.45f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f},
+		{-0.45f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f}
 	};
 
 	D3D11_BUFFER_DESC bufferDesc = { 0 };
@@ -175,8 +175,8 @@ void CGame::InitPipeline()
 	// initialize input layout 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = 
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		//{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	Device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), VSFile->Data, VSFile->Length, &InputLayout);
