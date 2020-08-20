@@ -5,6 +5,7 @@
 using namespace Microsoft::WRL;
 using namespace Windows::UI::Core;
 using namespace Platform;
+using namespace DirectX;
 
 class CGame
 {
@@ -17,11 +18,17 @@ public:
 	ComPtr<ID3D11VertexShader> VertexShader;
 	ComPtr<ID3D11PixelShader> PixelShader;
 	ComPtr<ID3D11InputLayout> InputLayout;
+	ComPtr<ID3D11Buffer> ConstantBuffer;
 
 	struct VERTEX
 	{
 		float X, Y, Z;	// vertex position
 		float R, G, B;	// color data
+	};
+
+	struct OFFSET
+	{
+		float X, Y, Z;
 	};
 
 	void Initialize(); // Initialization code
@@ -30,12 +37,6 @@ public:
 	void Render(); // Draw graphics
 	void InitPipeline();
 
+	float time;
 
-	// To Create a triangle
-	// 1. Creating 3 vertices to make a triangle 
-	// 2. Storing the vertices in vRam
-	// 3. Inform the GPU how to read the vertices
-	// 4. Inform the GPU how to translate the vertices into a flat image
-	// 5. Inform the GPU where on the back buffer should the image appear
-	// 6. Render the triangle
 };

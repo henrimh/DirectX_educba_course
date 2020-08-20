@@ -108,11 +108,14 @@ void CGame::Initialize()
 
 	InitGraphics();
 	InitPipeline();
+
+	time = 0.0f;
 }
 
 // Performs updates to the game state
 void CGame::Update()
 {
+	time += 0.05f;
 }
 
 // Renders a single frame of 3D graphics
@@ -132,9 +135,39 @@ void CGame::Render()
 	 
 	// Setting up the primitive topology
 	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	OFFSET Offset;
+	//Offset.X = 0.5f;
+	//Offset.Y = 0.2f;
+	//Offset.Z = 0.7f;
+
+	// Calculate the world transformation
+	XMMATRIX matWorld = XMMatrixRotationY(time);
+	
+
+	// Calculate the view transformation
+	XMVECTOR camPosition = XMVectorSet(1.5f, 0.5f, 1.5f, 0.0f);
+	XMVECTOR camLookAt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMVECTOR camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMMATRIX matView = XMMatrixLookAtLH(camPosition, camLookAt, camUp);
+
+	// Calculate the projection transformation
+	CoreWindow^ Window = CoreWindow::GetForCurrentThread(); // Get the pointer to the window
+	XMMATRIX matProjection = XMMatrixPerspectiveFovLH(
+		XMConvertToRadians(45.0f),
+		(FLOAT)Window->Bounds.Width / (FLOAT)Window->Bounds.Height,
+		1.0f,
+		100.f);
+
+	// Calculate the final matrix 
+	XMMATRIX matFinal = matWorld * matView * matProjection;
+
+	// Load the data into the constant buffer
+	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal, 0, 0);
+
 	DeviceContext->Draw(3, 0);
 
-	// Switch the back buffer and the front buffer
+	// Switch the back buffer and the front buffer 
 	SwapChain->Present(1, 0);
 }
 
@@ -181,4 +214,15 @@ void CGame::InitPipeline()
 
 	Device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), VSFile->Data, VSFile->Length, &InputLayout);
 	DeviceContext->IASetInputLayout(InputLayout.Get());
+
+	D3D11_BUFFER_DESC bufferDesc = { 0 };
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = 64;
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	Device->CreateBuffer(&bufferDesc, nullptr, &ConstantBuffer);
+	DeviceContext->VSSetConstantBuffers(0, 1, ConstantBuffer.GetAddressOf());
+
+
+
 } 

@@ -1,3 +1,9 @@
+
+cbuffer ConstantBuffer
+{
+	float4x4 MatFinal;
+};
+
 struct VOut
 {
 	float4 pos : SV_POSITION;
@@ -12,11 +18,9 @@ VOut main( float4 pos : POSITION, float4 color : COLOR)
 	VOut output;
 
 	// set the output values
-	output.pos = pos;
-	output.pos.xy *= 0.7; // shriking vertices on the x and y axis
+	output.pos = mul(MatFinal, pos); // renders the final 2D vector on the screen
 	output.color = color;
-
-
+	
 	// return the struct
 	return output;
 }
