@@ -19,6 +19,7 @@ public:
 	ComPtr<ID3D11PixelShader> PixelShader;
 	ComPtr<ID3D11InputLayout> InputLayout;
 	ComPtr<ID3D11Buffer> ConstantBuffer;
+	ComPtr<ID3D11DepthStencilView> ZBuffer;
 
 	struct VERTEX
 	{
