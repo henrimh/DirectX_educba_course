@@ -158,7 +158,7 @@ void CGame::Render()
 	DeviceContext->IASetVertexBuffers(0, 1, VertexBuffer.GetAddressOf(), &stride, &offset);
 	 
 	// Setting up the primitive topology
-	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	// Calculate the world transformation
 	XMMATRIX matRotate[4];
@@ -173,7 +173,7 @@ void CGame::Render()
 	matTranslate[2] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
 	matTranslate[3] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
 
-	// Calculate the view transformation
+	// Calculate the view transformation-
 	XMVECTOR camPosition = XMVectorSet(1.5f, 0.5f, 1.5f, 0.0f);
 	XMVECTOR camLookAt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -196,16 +196,16 @@ void CGame::Render()
 
 	// Load the data into the constant buffer and draw each triangle
 	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[0], 0, 0);
-	DeviceContext->Draw(3, 0);
+	DeviceContext->Draw(4, 0);
 
 	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[1], 0, 0);
-	DeviceContext->Draw(3, 0);
+	DeviceContext->Draw(4, 0);
 	
 	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[2], 0, 0);
-	DeviceContext->Draw(3, 0);
+	DeviceContext->Draw(4, 0);
 	
 	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[3], 0, 0);
-	DeviceContext->Draw(3, 0);
+	DeviceContext->Draw(4, 0);
 
 	// Switch the back buffer and the front buffer 
 	SwapChain->Present(1, 0);
@@ -215,9 +215,16 @@ void CGame::InitGraphics()
 {
 	VERTEX Vertices[] =
 	{
-		{0.0f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f},
-		{0.45f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f},
-		{-0.45f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f}
+		{-1.0f, 1.0f, -1.0f,	1.0f, 0.0f, 0.0f}, // vertex 0
+		{1.0f, 1.0f, -1.0f,		0.0f, 1.0f, 0.0f}, // vertex 1
+		{-1.0f, -1.0f, -1.0f,	0.0f, 0.0f, 1.0f}, // vertex 2...
+		{ 1.0f, -1.0f, -1.0f,	1.0f, 0.0f, 1.0f },
+		{-1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f},
+		{1.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		{ -1.0f, -1.0f, 1.0f,	1.0f, 1.0f, 0.0f },
+		{ 1.0f, -1.0f, 1.0f,	1.0f, 1.0f, 1.0f } // 7
+
+
 	};
 
 	D3D11_BUFFER_DESC bufferDesc = { 0 };
@@ -227,6 +234,26 @@ void CGame::InitGraphics()
 	D3D11_SUBRESOURCE_DATA subResourceData = { Vertices, 0, 0 };
 
 	Device->CreateBuffer(&bufferDesc, &subResourceData, &VertexBuffer);
+
+	// Index list for cube.
+	short OurIndices[] =
+	{
+		 0, 1, 2, // side 1
+		 2, 1, 3,
+		 4, 0, 6, // side 2
+		 6, 0, 2,
+		 7, 5, 6, // side 3
+		 6, 5, 3,
+		 3, 1, 7, // side 4
+		 7, 1, 5,
+		 4, 5, 0, // side 5
+		 0, 5, 1,
+		 3, 7, 2, // side 6
+		 2, 7, 6
+	};
+
+	// Create the index buffer.
+
 }
 
 // Initializes the GPU settings and prepares it for rendering 
