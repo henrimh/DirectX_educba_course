@@ -15,7 +15,6 @@ public:
 	ComPtr<IDXGISwapChain1> SwapChain;				// Swap Chain interface
 	ComPtr<ID3D11RenderTargetView> RenderTarget;
 	ComPtr<ID3D11Buffer> VertexBuffer;
-	ComPtr<ID3D11Buffer> IndexBuffer;
 	ComPtr<ID3D11VertexShader> VertexShader;
 	ComPtr<ID3D11PixelShader> PixelShader;
 	ComPtr<ID3D11InputLayout> InputLayout;
