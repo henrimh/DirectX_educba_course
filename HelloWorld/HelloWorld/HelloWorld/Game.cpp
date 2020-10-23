@@ -119,14 +119,13 @@ void CGame::Initialize()
 
 	viewPort.TopLeftX = 0;
 	viewPort.TopLeftY = 0;
-	viewPort.Width = Window->Bounds.Width;
-	viewPort.Height = Window->Bounds.Height;
+	viewPort.Width = Window->Bounds.Width * 1.5f; // The 1.5f here is to recombat monitor scaling 150%.
+	viewPort.Height = Window->Bounds.Height * 1.5f; // same here. 
 	viewPort.MinDepth = 0; // the closest an object can be on the depth buffer. 
 	viewPort.MaxDepth = 1; // the farthest an object can be on the depth buffer.
 
 	DeviceContext->RSSetViewports(1, &viewPort);
 	
-
 	InitGraphics();
 	InitPipeline();
 
@@ -136,7 +135,7 @@ void CGame::Initialize()
 // Performs updates to the game state
 void CGame::Update()
 {
-	time += 0.05f;
+	time += 0.03f;
 }
 
 // Renders a single frame of 3D graphics
@@ -156,25 +155,26 @@ void CGame::Render()
 	UINT stride = sizeof(VERTEX);
 	UINT offset = 0;
 	DeviceContext->IASetVertexBuffers(0, 1, VertexBuffer.GetAddressOf(), &stride, &offset);
+	DeviceContext->IASetIndexBuffer(IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0); // the format R32 doesn't draw anything.
 	 
 	// Setting up the primitive topology
-	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // triangle strip goes haywire
 
 	// Calculate the world transformation
-	XMMATRIX matRotate[4];
-	matRotate[0] = XMMatrixRotationY(time);
-	matRotate[1] = XMMatrixRotationY(time + 3.14159f);
-	matRotate[2] = XMMatrixRotationY(time);
-	matRotate[3] = XMMatrixRotationY(time + 3.14159f);
+	XMMATRIX matRotate = XMMatrixRotationY(time);
+	//matRotate[0] = XMMatrixRotationY(time);
+	//matRotate[1] = XMMatrixRotationY(time + 3.14159f);
+	//matRotate[2] = XMMatrixRotationY(time);
+	//matRotate[3] = XMMatrixRotationY(time + 3.14159f);
 
-	XMMATRIX matTranslate[4];
-	matTranslate[0] = XMMatrixTranslation(0.0f, 0.0f, 0.5);
-	matTranslate[1] = XMMatrixTranslation(0.0f, 0.0f, 0.5);
-	matTranslate[2] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
-	matTranslate[3] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
+	//XMMATRIX matTranslate[4];
+	//matTranslate[0] = XMMatrixTranslation(0.0f, 0.0f, 0.5);
+	//matTranslate[1] = XMMatrixTranslation(0.0f, 0.0f, 0.5);
+	//matTranslate[2] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
+	//matTranslate[3] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
 
 	// Calculate the view transformation
-	XMVECTOR camPosition = XMVectorSet(1.5f, 0.5f, 1.5f, 0.0f);
+	XMVECTOR camPosition = XMVectorSet(1.5f, 0.5f, 5.0f, 0.0f);
 	XMVECTOR camLookAt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX matView = XMMatrixLookAtLH(camPosition, camLookAt, camUp);
@@ -188,26 +188,12 @@ void CGame::Render()
 		100.f);
 
 	// Calculate the final matrix 
-	XMMATRIX matFinal[4];
-	matFinal[0] = matTranslate[0] * matRotate[0] * matView * matProjection;
-	matFinal[1] = matTranslate[1] * matRotate[1] * matView * matProjection;
-	matFinal[2] = matTranslate[2] * matRotate[2] * matView * matProjection;
-	matFinal[3] = matTranslate[3] * matRotate[3] * matView * matProjection;
+	XMMATRIX matFinal = matRotate * matView * matProjection;
 
 	// Load the data into the constant buffer and draw each triangle
-	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[0], 0, 0);
-	DeviceContext->Draw(3, 0);
-
-	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[1], 0, 0);
-	DeviceContext->Draw(3, 0);
-	
-	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[2], 0, 0);
-	DeviceContext->Draw(3, 0);
-	
-	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal[3], 0, 0);
-	DeviceContext->Draw(3, 0);
-
-	// Switch the back buffer and the front buffer 
+	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal, 0, 0);
+	DeviceContext->DrawIndexed(36, 0, 0); // This draw is not working as it should
+ 
 	SwapChain->Present(1, 0);
 }
 
@@ -215,9 +201,15 @@ void CGame::InitGraphics()
 {
 	VERTEX Vertices[] =
 	{
-		{0.0f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f},
-		{0.45f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f},
-		{-0.45f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f}
+		{-1.0f, 1.0f, -1.0f,	1.0f, 0.0f, 0.0f}, // vertex 0
+		{1.0f, 1.0f, -1.0f,		0.0f, 1.0f, 0.0f}, // vertex 1
+		{-1.0f, -1.0f, -1.0f,	0.0f, 0.0f, 1.0f }, // vertex 2
+		{ 1.0f, -1.0f, -1.0f,	1.0f, 0.0f, 1.0f }, // vertex 3
+		{-1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f}, // vertex 4
+		{1.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f}, // vertex 5
+		{-1.0f, -1.0f, 1.0f,	1.0f, 1.0f, 0.0f }, // vertex 6
+		{1.0f, -1.0f, 1.0f,		1.0f, 1.0f, 1.0f}, // vertex 7
+
 	};
 
 	D3D11_BUFFER_DESC bufferDesc = { 0 };
@@ -225,8 +217,31 @@ void CGame::InitGraphics()
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 	D3D11_SUBRESOURCE_DATA subResourceData = { Vertices, 0, 0 };
-
 	Device->CreateBuffer(&bufferDesc, &subResourceData, &VertexBuffer);
+
+	short OurIndices[] =
+	{
+		0, 1, 2, //side 1
+		2, 1, 3,
+		4, 0, 6, // side 2
+		6, 0, 2,
+		7, 5, 6, // side 3
+		6, 5, 4,
+		3, 1, 7, // side 4
+		7, 1, 5,
+		4, 5, 0, // side 5
+		0, 5, 1,
+		3, 7, 2, //side 6
+		2, 7, 6,
+	};
+
+	// Create the index buffer
+	D3D11_BUFFER_DESC indexDesc = { 0 };
+	indexDesc.ByteWidth = sizeof(short) * ARRAYSIZE(OurIndices);
+	indexDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA subResourceDataIndices = { OurIndices, 0, 0 };
+	Device->CreateBuffer(&indexDesc, &subResourceDataIndices, &IndexBuffer);
 }
 
 // Initializes the GPU settings and prepares it for rendering 
