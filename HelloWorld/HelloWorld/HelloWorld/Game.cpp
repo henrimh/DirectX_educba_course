@@ -135,7 +135,7 @@ void CGame::Initialize()
 // Performs updates to the game state
 void CGame::Update()
 {
-	time += 0.03f;
+	time += 0.02f;
 }
 
 // Renders a single frame of 3D graphics
@@ -162,19 +162,9 @@ void CGame::Render()
 
 	// Calculate the world transformation
 	XMMATRIX matRotate = XMMatrixRotationY(time);
-	//matRotate[0] = XMMatrixRotationY(time);
-	//matRotate[1] = XMMatrixRotationY(time + 3.14159f);
-	//matRotate[2] = XMMatrixRotationY(time);
-	//matRotate[3] = XMMatrixRotationY(time + 3.14159f);
-
-	//XMMATRIX matTranslate[4];
-	//matTranslate[0] = XMMatrixTranslation(0.0f, 0.0f, 0.5);
-	//matTranslate[1] = XMMatrixTranslation(0.0f, 0.0f, 0.5);
-	//matTranslate[2] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
-	//matTranslate[3] = XMMatrixTranslation(0.0f, 0.0f, -0.5);
 
 	// Calculate the view transformation
-	XMVECTOR camPosition = XMVectorSet(1.5f, 0.5f, 5.0f, 0.0f);
+	XMVECTOR camPosition = XMVectorSet(0.0f, 2.0f, 20.0f, 0.0f);
 	XMVECTOR camLookAt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX matView = XMMatrixLookAtLH(camPosition, camLookAt, camUp);
@@ -192,7 +182,7 @@ void CGame::Render()
 
 	// Load the data into the constant buffer and draw each triangle
 	DeviceContext->UpdateSubresource(ConstantBuffer.Get(), 0, 0, &matFinal, 0, 0);
-	DeviceContext->DrawIndexed(36, 0, 0); // This draw is not working as it should
+	DeviceContext->DrawIndexed(24, 0, 0); 
  
 	SwapChain->Present(1, 0);
 }
@@ -201,14 +191,21 @@ void CGame::InitGraphics()
 {
 	VERTEX Vertices[] =
 	{
-		{-1.0f, 1.0f, -1.0f,	1.0f, 0.0f, 0.0f}, // vertex 0
-		{1.0f, 1.0f, -1.0f,		0.0f, 1.0f, 0.0f}, // vertex 1
-		{-1.0f, -1.0f, -1.0f,	0.0f, 0.0f, 1.0f }, // vertex 2
-		{ 1.0f, -1.0f, -1.0f,	1.0f, 0.0f, 1.0f }, // vertex 3
-		{-1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f}, // vertex 4
-		{1.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f}, // vertex 5
-		{-1.0f, -1.0f, 1.0f,	1.0f, 1.0f, 0.0f }, // vertex 6
-		{1.0f, -1.0f, 1.0f,		1.0f, 1.0f, 1.0f}, // vertex 7
+		// fuselage
+		{ 3.0f, 0.0f, 0.0f,		0.0f, 1.0f, 0.0f}, // vertex 0
+		{ 0.0f, 3.0f, -3.0f,	0.0f, 0.0f, 1.0f}, // vertex 1
+		{ 0.0f, 0.0f, 10.0f,	1.0f, 0.0f, 0.0f }, // vertex 2
+		{ -3.0f, 0.0f, 0.0f,	0.0f, 1.0f, 1.0f }, // vertex 3
+
+		// left gun
+		{ 3.2f, -1.0f, -3.0f,	0.0f, 0.0f, 1.0f },
+		{ 3.2f, -1.0f, 11.0f,	0.0f, 1.0f, 0.0f },
+		{ 2.0f, 1.0f, 2.0f,		0.0f, 1.0f, 1.0f },
+
+		// right gun
+		{ -3.2f, -1.0f, -3.0f,	0.0f, 0.0f, 1.0f },
+		{ -3.2f, -1.0f, 11.0f,	0.0f, 1.0f, 0.0f },
+		{ -2.0f, 1.0f, 2.0f,	0.0f, 1.0f, 1.0f }
 
 	};
 
@@ -221,18 +218,14 @@ void CGame::InitGraphics()
 
 	short OurIndices[] =
 	{
-		0, 1, 2, //side 1
+		0, 1, 2, // fuselage
 		2, 1, 3,
-		4, 0, 6, // side 2
-		6, 0, 2,
-		7, 5, 6, // side 3
-		6, 5, 4,
-		3, 1, 7, // side 4
-		7, 1, 5,
-		4, 5, 0, // side 5
-		0, 5, 1,
-		3, 7, 2, //side 6
-		2, 7, 6,
+		3, 1, 0, 
+		0, 2, 3,
+		4, 5, 6, // wings
+		7, 8, 9,
+		4, 6, 5,
+		7, 9, 8
 	};
 
 	// Create the index buffer
